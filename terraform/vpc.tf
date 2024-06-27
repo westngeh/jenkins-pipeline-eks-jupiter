@@ -1,7 +1,9 @@
 data "aws_availability_zones" "azs" {}
+
 module "myapp-vpc" {
-  source          = "terraform-aws-modules/vpc/aws"
-  version         = "5.8.1"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "5.0.0"  # Update to the latest stable version if needed
+
   name            = "myapp-vpc"
   cidr            = var.vpc_cidr_block
   private_subnets = var.private_subnet_cidr_blocks
@@ -18,11 +20,11 @@ module "myapp-vpc" {
 
   public_subnet_tags = {
     "kubernetes.io/cluster/myapp-eks-cluster" = "shared"
-    "kubernetes.io/role/elb"                  = 1
+    "kubernetes.io/role/elb"                  = "1"
   }
 
   private_subnet_tags = {
     "kubernetes.io/cluster/myapp-eks-cluster" = "shared"
-    "kubernetes.io/role/internal-elb"         = 1
+    "kubernetes.io/role/internal-elb"         = "1"
   }
 }
