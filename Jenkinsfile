@@ -36,6 +36,10 @@ pipeline {
                             // Update kubeconfig
                             sh "aws eks update-kubeconfig --name myapp-eks-cluster --region us-east-1"
                             
+                            // Validate kubeconfig
+                            sh "kubectl config view"
+                            sh "kubectl config current-context"
+                            
                             // Verify kubeconfig context
                             sh "kubectl config use-context arn:aws:eks:us-east-1:316065414151:cluster/myapp-eks-cluster"
                             
@@ -63,5 +67,6 @@ pipeline {
         }
     }
 }
+
 
 
