@@ -17,20 +17,51 @@ pipeline {
                 }
             }
         }
+        stage("Validate AWS Authentication") {
+            steps {
+                script {
+                    // Check AWS authentication
+                    sh "aws sts get-caller-identity"
+                }
+            }
+        }
         stage("Deploy to EKS") {
             steps {
                 script {
-                    dir('kubernetes') {
-                        sh "aws eks update-kubeconfig --name myapp-eks-cluster"
-                        sh "kubectl apply -f jupiterapp.yaml"
-                    
-                   }
+                    withCredentials([
+                        string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+                        string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
+                    ]) {
+                        dir('kubernetes') {
+                            // Update kubeconfig
+                            sh "aws eks update-kubeconfig --name myapp-eks-cluster --region us-east-1"
+                            
+                            // Verify kubeconfig context
+                            sh "kubectl config use-context arn:aws:eks:us-east-1:316065414151:cluster/myapp-eks-cluster"
+                            
+                            // Validate Kubernetes configuration
+                            sh "kubectl get nodes"
+                            
+                            // Apply Kubernetes configuration
+                            sh "kubectl apply -f jupiterapp.yaml"
+                        }
+                    }
                 }
-        
             }
-    
         }
-
+    }
+    post {
+        failure {
+            script {
+                echo 'Pipeline failed. Please check the logs for more details.'
+            }
+        }
+        success {
+            script {
+                echo 'Pipeline completed successfully.'
+            }
+        }
     }
 }
+
 
